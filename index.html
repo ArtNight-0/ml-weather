@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GDP Per Capita to Urbanization Rate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+      <h2 class="text-2xl font-semibold text-gray-700 mb-4">
+        Calculate Urbanization Rate
+      </h2>
+      <form id="gdpForm" class="space-y-4">
+        <div>
+          <label for="gdp_per_capita" class="block text-gray-600"
+            >GDP Per Capita ($)</label
+          >
+          <input
+            type="number"
+            id="gdp_per_capita"
+            name="gdp_per_capita"
+            step="0.01"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition-colors"
+        >
+          Submit
+        </button>
+      </form>
+
+      <div
+        class="result mt-4 text-lg font-medium text-green-600"
+        id="result"
+      ></div>
+    </div>
+
+    <div class="bg-white p-8 rounded-lg shadow-lg w-96 mt-8">
+      <h2 class="text-2xl font-semibold text-gray-700 mb-4">
+        Predict Birth Rate
+      </h2>
+      <form id="birthRateForm" class="space-y-4">
+        <div>
+          <label for="steps" class="block text-gray-600"
+            >Number of Future Steps</label
+          >
+          <input
+            type="number"
+            id="steps"
+            name="steps"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition-colors"
+        >
+          Submit
+        </button>
+      </form>
+
+      <div
+        class="result mt-4 text-lg font-medium text-green-600"
+        id="birthRateResult"
+      ></div>
+    </div>
+
+    <script>
+      document
+        .getElementById("gdpForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const gdpPerCapita = document.getElementById("gdp_per_capita").value;
+
+          try {
+            // Make the POST request to the localhost server
+            const response = await fetch(
+              "http://localhost:8000/predict/economic-growth",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  interest_rate: gdpPerCapita, // Adjust this to match your model's expected input
+                  unemployment_rate: 5.0, // Example value, adjust as needed
+                }),
+              }
+            );
+
+            // Check if the response is ok
+            if (response.ok) {
+              const result = await response.json();
+              // Display the urbanization rate
+              document.getElementById(
+                "result"
+              ).innerText = `Predicted GDP Growth Rate: ${result.predicted_gdp_growth_rate}%`;
+            } else {
+              // Handle non-200 responses
+              document.getElementById(
+                "result"
+              ).innerText = `Error: ${response.statusText}`;
+            }
+          } catch (error) {
+            // Handle network errors
+            document.getElementById(
+              "result"
+            ).innerText = `Error: Could not connect to the server.`;
+          }
+        });
+
+      document
+        .getElementById("birthRateForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const steps = document.getElementById("steps").value;
+
+          try {
+            // Make the POST request to the localhost server
+            const response = await fetch(
+              "http://localhost:8000/predict/birth-rate",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  steps: parseInt(steps), // Ensure steps is an integer
+                }),
+              }
+            );
+
+            // Check if the response is ok
+            if (response.ok) {
+              const result = await response.json();
+              // Display the birth rate predictions
+              document.getElementById(
+                "birthRateResult"
+              ).innerText = `Predicted Birth Rates: ${result.predicted_birth_rates.join(
+                ", "
+              )}`;
+            } else {
+              // Handle non-200 responses
+              document.getElementById(
+                "birthRateResult"
+              ).innerText = `Error: ${response.statusText}`;
+            }
+          } catch (error) {
+            // Handle network errors
+            document.getElementById(
+              "birthRateResult"
+            ).innerText = `Error: Could not connect to the server.`;
+          }
+        });
+    </script>
+  </body>
+</html>
